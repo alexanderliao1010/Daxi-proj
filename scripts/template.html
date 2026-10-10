@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>大溪桌球場域施工紀錄儀表板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEEEC; --surface:#FFFFFF; --ink:#1A2127; --muted:#5E696F; --rule:#D3D8D7; --track:#E3E6E5;
+  --plan:#2F5E8C; --act:#A4441F; --ok:#2E6B4F;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"Barlow Condensed","Noto Sans TC","Arial Narrow",sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181B; --surface:#1D2226; --ink:#E5E9EA; --muted:#98A3A8; --rule:#2E353A; --track:#2A3136;
+  --plan:#80A9D6; --act:#E27C55; --ok:#6DBB94;}}
+:root[data-theme="dark"]{--bg:#14181B; --surface:#1D2226; --ink:#E5E9EA; --muted:#98A3A8; --rule:#2E353A; --track:#2A3136; --plan:#80A9D6; --act:#E27C55; --ok:#6DBB94;}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 56px}
+header{display:grid;gap:6px;margin-bottom:26px}
+h1{font-size:clamp(20px,2.6vw,28px);line-height:1.3;margin:0;font-weight:700;letter-spacing:.01em}
+.meta{color:var(--muted);font-size:13.5px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.meta b{color:var(--ink);font-weight:500}
+section{background:var(--surface);border:1px solid var(--rule);border-radius:6px;margin-bottom:18px;padding:22px 24px}
+h2{font-size:17px;margin:0 0 16px;font-weight:700;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2 small{font-weight:400;color:var(--muted);font-size:13px}
+.num{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+
+/* Row 1 */
+.r1{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:28px}
+.pair{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rule);padding-bottom:16px}
+.pair div+div{border-left:1px solid var(--rule);padding-left:18px}
+.lab{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+.big{font-family:var(--num);font-size:54px;line-height:1;font-weight:600;margin-top:6px}
+.big span{font-size:26px;margin-left:2px}
+.p .big{color:var(--plan)} .a .big{color:var(--act)}
+.delta{margin:14px 0 4px;font-size:14.5px}
+.delta strong{font-family:var(--num);font-size:20px;color:var(--ok);font-weight:600;margin:0 2px}
+.delta.behind strong{color:var(--act)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 0;font-size:13.5px}
+.facts dt{color:var(--muted)} .facts dd{margin:0;text-align:right}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .axis{stroke:var(--rule)} .chart text{fill:var(--muted);font-size:11px;font-family:var(--sans)}
+.legend{display:flex;gap:18px;font-size:12.5px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:6px}
+
+select.pick{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:5px 30px 5px 10px;appearance:none;cursor:pointer;
+ background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+select.pick:focus-visible{outline:2px solid var(--plan);outline-offset:2px}
+.today{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:13.5px}
+.today h3{font-size:13px;font-weight:500;color:var(--muted);margin:0 0 4px}
+.today ul{margin:0;padding-left:18px} .today p{margin:0;color:var(--muted)}
+.inc{display:block;font-size:12px;color:var(--act);font-family:var(--num)}
+/* Row 2 */
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px;font-size:14px}
+th{font-weight:500;color:var(--muted);font-size:12.5px;text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+tr.grp td{background:var(--bg);font-weight:700;font-size:13px;padding:7px 10px}
+td.code{color:var(--muted);white-space:nowrap;font-size:12.5px}
+td.q,th.q{text-align:right;white-space:nowrap}
+td.bar{width:34%}
+.bw{display:flex;align-items:center;gap:10px}
+.bt{flex:1;height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+.bf{height:100%;background:var(--act);border-radius:4px}
+.pc{font-family:var(--num);font-size:16px;width:52px;text-align:right;font-weight:600}
+tr.idle .pc{color:var(--muted);font-weight:500}
+tr.done .bf{background:var(--ok)}
+.toggle{background:none;border:1px solid var(--rule);color:var(--ink);border-radius:4px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer;margin-top:12px}
+.toggle:hover{border-color:var(--muted)}
+
+/* Row 3 */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{font:inherit;font-size:13.5px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:20px;padding:4px 14px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.grid{columns:4 220px;column-gap:12px}
+figure{margin:0 0 12px;break-inside:avoid;cursor:zoom-in}
+figure img{width:100%;height:auto;display:block;border-radius:4px;background:var(--track)}
+figcaption{font-size:12.5px;color:var(--muted);padding:5px 2px 0}
+figcaption b{color:var(--ink);font-weight:500;margin-right:6px}
+button:focus-visible,figure:focus-visible{outline:2px solid var(--plan);outline-offset:2px}
+
+.lb{position:fixed;inset:0;background:rgba(10,12,14,.92);display:none;align-items:center;justify-content:center;z-index:10;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.lb.on{display:flex}
+.lb img{max-width:100%;max-height:calc(100% - 40px);border-radius:4px}
+.lb p{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;color:#dde;font-size:14px;margin:0}
+.lb button{position:absolute;background:rgba(255,255,255,.12);border:0;color:#fff;font-size:22px;width:44px;height:44px;border-radius:22px;cursor:pointer}
+.lb .x{top:calc(14px + env(safe-area-inset-top,0px));right:14px}
+.lb .pv{left:12px;top:50%} .lb .nx{right:12px;top:50%}
+footer{color:var(--muted);font-size:12.5px;margin-top:8px}
+
+@media (max-width:760px){
+  .wrap{padding:18px 12px 40px} section{padding:18px 16px}
+  .r1{grid-template-columns:1fr} .big{font-size:46px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>大溪區綜合市民活動中心 4 樓桌球場域及多功能教室設置計畫</h1>
+  <div class="meta" id="meta"></div>
+</header>
+
+<section aria-labelledby="h1s">
+  <h2 id="h1s">整體進度 <label style="font-weight:400;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px">查看日期 <select class="pick" id="pick" aria-label="選擇查看日期"></select></label><small id="asof"></small></h2>
+  <div class="r1">
+    <div>
+      <div class="pair">
+        <div class="p"><div class="lab"><span class="sw" style="background:var(--plan)"></span>預定進度</div><div class="big" id="planNow"></div></div>
+        <div class="a"><div class="lab"><span class="sw" style="background:var(--act)"></span>實際進度</div><div class="big" id="actNow"></div></div>
+      </div>
+      <p class="delta" id="delta"></p>
+      <dl class="facts" id="facts"></dl>
+      <div class="today" id="today"></div>
+    </div>
+    <div class="chart">
+      <div class="legend"><span><i style="border-color:var(--plan)"></i>預定累計進度</span><span><i style="border-color:var(--act)"></i>實際累計進度</span></div>
+      <div id="curve"></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h2s">
+  <h2 id="h2s">各工項進度 <small id="asof2"></small></h2>
+  <div class="tbl"><table id="items"></table></div>
+  <button class="toggle" id="tgl" aria-expanded="false">顯示間接費用項目</button>
+</section>
+
+<section aria-labelledby="h3s">
+  <h2 id="h3s">施工照片 <small id="pdate"></small></h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid" id="grid"></div>
+</section>
+<footer id="foot"></footer>
+</div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="照片檢視">
+  <img id="lbImg" alt=""><p id="lbCap"></p>
+  <button class="x" id="lbX" aria-label="關閉">×</button>
+  <button class="pv" id="lbP" aria-label="上一張">‹</button>
+  <button class="nx" id="lbN" aria-label="下一張">›</button>
+</div>
+
+<script>
+const D = __DATA__;
+const I = D.info;
+const pct = (v,d=2)=>(v*100).toFixed(d);
+const money = v=>v.toLocaleString('zh-TW');
+const $ = id=>document.getElementById(id);
+
+$('meta').innerHTML = `<span>承攬廠商 <b>硯森營造有限公司</b></span><span>監造單位 <b>聯安工程顧問有限公司</b></span><span>主辦機關 <b>桃園市大溪區公所</b></span>`;
+
+const TOT=I.total, DAYS=D.days;
+$('foot').textContent=`資料來源：${I.source}（數量表、進度儲存區、總表、施工日誌）。實際進度以累計完成金額 ÷ 契約總價計算。最後產生：${I.built}`;
+const holidayName = d=>d.notes.find(n=>!/^壹|^依據/.test(n))||'不計工期';
+$('pick').innerHTML = DAYS.slice().reverse().map((d,i)=>{
+  const n=DAYS.indexOf(d)+1;
+  const tag = d.work ? `第 ${n} 天` : `${holidayName(d).replace(/^(國定假日-|本日無施工-)/,'')}，不計工期`;
+  return `<option value="${d.date}">${d.date}（${tag}）</option>`}).join('');
+const cumTo = (it,k)=>Object.entries(it.daily).reduce((s,[dk,v])=>dk<=k?s+v:s,0);
+const actAt = k=>D.items.reduce((s,it)=>s+cumTo(it,k)*it.price,0)/TOT;
+
+/* S-curve */
+function drawCurve(k){
+  const toDate = s=>{const [y,m,d]=s.split('/').map(Number);return new Date(y+1911,m-1,d)};
+  const t0 = toDate(D.plan[0][0]), t1 = toDate(D.plan[D.plan.length-1][0]);
+  const day = s=>(toDate(s)-t0)/864e5, span = (t1-t0)/864e5;
+  const W=720,H=300,L=40,R=16,T=12,B=34, pw=W-L-R, ph=H-T-B;
+  const X = s=>L+day(s)/span*pw, Y = v=>T+ph-v*ph;
+  const path = arr=>arr.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  let g='';
+  for(let v=0;v<=1.0001;v+=.25){g+=`<line class="axis" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" ${v?'stroke-dasharray="2 4"':''}/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${v*100}%</text>`}
+  for(let m=new Date(t0.getFullYear(),t0.getMonth()+1,1); m<=t1; m.setMonth(m.getMonth()+1)){
+    const s=`${m.getFullYear()-1911}/${m.getMonth()+1}/1`, x=X(s);
+    g+=`<line class="axis" x1="${x}" x2="${x}" y1="${T+ph}" y2="${T+ph+5}"/><text x="${x}" y="${H-12}" text-anchor="middle">${m.getMonth()+1} 月</text>`;
+  }
+  const xe=X(I.endDiary);
+  if(I.endDiary!==I.endSchedule) g+=`<line x1="${xe}" x2="${xe}" y1="${T}" y2="${T+ph}" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="${xe-4}" y="${T+12}" text-anchor="end">施工日誌竣工日 ${I.endDiary.slice(4)}</text>`;
+  const xn=X(k);
+  g+=`<line x1="${xn}" x2="${xn}" y1="${T}" y2="${T+ph}" stroke="var(--ink)"/><text x="${xn+5}" y="${T+ph-6}" fill="var(--ink)">${k.slice(4)}</text>`;
+  g+=`<path d="${path(D.plan)}" fill="none" stroke="var(--plan)" stroke-width="2.2" stroke-linejoin="round"/>`;
+  const act=[[D.plan[0][0],0],...DAYS.filter(d=>d.date<=k).map(d=>[d.date,actAt(d.date)])];
+  g+=`<path d="${path(act)}" fill="none" stroke="var(--act)" stroke-width="2.6" stroke-linejoin="round"/>`;
+  act.slice(1).forEach(p=>{g+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="${p[0]===k?4.5:3}" fill="var(--act)"><title>${p[0]} 實際 ${pct(p[1])}%</title></circle>`});
+  const pk=DAYS.find(d=>d.date===k).plan;
+  g+=`<circle cx="${xn}" cy="${Y(pk)}" r="4.5" fill="var(--plan)"><title>${k} 預定 ${pct(pk)}%</title></circle>`;
+  const last=D.plan[D.plan.length-1];
+  g+=`<text x="${X(last[0])}" y="${Y(1)-4}" text-anchor="end">排程完成 ${last[0].slice(4)}</text>`;
+  $('curve').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="預定與實際累計進度曲線">${g}</svg>`;
+}
+
+/* Items */
+let showInd=false;
+function drawItems(k){
+  const row = it=>{
+    const c=cumTo(it,k), inc=it.daily[k]||0;
+    const r = it.qty? Math.min(c/it.qty,1):0;
+    const cls = r>=1?'done':(r>0?'':'idle');
+    const f=v=>+v.toFixed(2);
+    const q = it.unit==='式' && !c ? `— / 1 式` : `<span class="num">${f(c)} / ${it.qty}</span> ${it.unit}`;
+    const incT = inc? `<span class="inc">當日 +${f(inc)}</span>`:'';
+    return `<tr class="${cls} ${it.direct?'':'ind'}" ${it.direct||showInd?'':'hidden'}><td class="code">${it.code}</td><td>${it.name}</td><td class="q">${q}${incT}</td><td class="q num">${money(it.amt)}</td><td class="bar"><div class="bw"><div class="bt"><div class="bf" style="width:${r*100}%"></div></div><span class="pc">${(r*100).toFixed(0)}%</span></div></td></tr>`;
+  };
+  const main = D.items.filter(i=>i.code.startsWith('壹.一')), misc=D.items.filter(i=>i.code.startsWith('壹.二')), ind=D.items.filter(i=>!i.direct);
+  const sum = a=>a.reduce((s,i)=>s+i.amt,0), done=a=>a.reduce((s,i)=>s+cumTo(i,k)*i.price,0);
+  const grp=(t,a,hid)=>`<tr class="grp ${hid?'ind':''}" ${hid&&!showInd?'hidden':''}><td colspan="5">${t}　<span style="font-weight:400;color:var(--muted)">完成 ${pct(done(a)/sum(a),1)}%</span></td></tr>`+a.map(row).join('');
+  $('items').innerHTML = `<thead><tr><th>項次</th><th>工項</th><th class="q">累計 / 契約數量</th><th class="q">契約金額</th><th>完成比例</th></tr></thead><tbody>`
+    + grp('一、主體工程',main) + grp('二、雜項工程',misc) + grp('三～七、間接費用（尚未計價）',ind,true) + '</tbody>';
+  $('asof2').textContent = `截至 ${k}，依數量表累計數量 ÷ 契約數量`;
+}
+const t=$('tgl'); t.onclick=()=>{showInd=!showInd;t.setAttribute('aria-expanded',showInd);
+  document.querySelectorAll('#items .ind').forEach(e=>e.hidden=!showInd); t.textContent=showInd?'隱藏間接費用項目':'顯示間接費用項目';};
+
+function render(k){
+  const d=DAYS.find(x=>x.date===k), upto=DAYS.filter(x=>x.date<=k);
+  const planV=d.plan, actV=actAt(k), amt=Math.round(actV*TOT);
+  $('asof').textContent = k===I.reportDate ? `最新：施工日誌第 ${I.reportNo} 號` : '';
+  $('planNow').innerHTML = `${pct(planV)}<span>%</span>`;
+  $('actNow').innerHTML = `${pct(actV)}<span>%</span>`;
+  const diff=(actV-planV)*100;
+  $('delta').className='delta'+(diff<0?' behind':'');
+  $('delta').innerHTML = Math.abs(diff)<.005 ? '進度與預定相符' : diff>0 ? `進度超前 <strong>${diff.toFixed(2)}</strong> 個百分點` : `進度落後 <strong>${(-diff).toFixed(2)}</strong> 個百分點`;
+  const tech=upto.reduce((s,x)=>s+x.tech,0), gen=upto.reduce((s,x)=>s+x.gen,0);
+  $('facts').innerHTML = [
+    ['開工日期', I.start],
+    ['累計工期 / 核定工期', `<span class="num">${d.used} / ${I.period}</span> 天`],
+    ['剩餘工期', `<span class="num">${I.period-d.used}</span> 天`],
+    ['累計完成金額', `<span class="num">${money(amt)}</span>`],
+    ['契約總價', `<span class="num">${money(TOT)}</span>`],
+    ['累計出工', `技術工 ${tech}、普通工 ${gen} 人次`],
+  ].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+  const work=d.notes.filter(n=>/^壹/.test(n)), other=d.notes.filter(n=>!/^壹/.test(n));
+  $('today').innerHTML = d.work
+    ? `<h3>當日施作（出工 技術工 ${d.tech}、普通工 ${d.gen}）</h3>${work.length?`<ul>${work.map(n=>`<li>${n.replace(/^(壹\.[一二]\.\d+)\.?/,'$1 ')}</li>`).join('')}</ul>`:'<p>無施作紀錄</p>'}${other.length?`<p>${other.join('；')}</p>`:''}`
+    : `<h3>當日</h3><p>${other.join('；')||'不計工期'}，未施工</p>`;
+  drawCurve(k); drawItems(k); drawPhotos(k);
+}
+$('pick').onchange=e=>render(e.target.value);
+/* Photos */
+let photoDay=null, cur='全部', vis=[], idx=0;
+function drawPhotos(k){
+  const withP=[...new Set(D.photos.map(p=>p.date))].sort();
+  // show selected day's photos; if none, show most recent day with photos on or before it
+  const day = withP.includes(k) ? k : withP.filter(x=>x<=k).pop();
+  photoDay=day; cur='全部';
+  const list=D.photos.filter(p=>p.date===day);
+  if(!day||!list.length){ $('pdate').textContent=''; $('tabs').innerHTML=''; $('grid').innerHTML=`<p style="color:var(--muted);margin:0">${k} 以前尚無施工照片。</p>`; vis=[]; return; }
+  $('pdate').textContent = `${day}，共 ${list.length} 張` + (day!==k?`（${k} 當日無照片，顯示最近一次）`:'');
+  const groups=['全部',...new Set(list.map(p=>p.g))];
+  $('tabs').innerHTML=groups.map(g=>`<button aria-pressed="${g===cur}" data-g="${g}">${g}${g==='全部'?'':`（${list.filter(p=>p.g===g).length}）`}</button>`).join('');
+  const draw=()=>{vis=list.filter(p=>cur==='全部'||p.g===cur);
+    $('grid').innerHTML=vis.map((p,i)=>`<figure tabindex="0" data-i="${i}"><img src="${p.src}" width="${p.w}" height="${p.h}" alt="${p.c}" loading="lazy"><figcaption><b>${p.g}</b>${p.c}</figcaption></figure>`).join('');};
+  $('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur=b.dataset.g;
+    document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b));draw();};
+  draw();
+}
+(function(){
+  const lb=$('lb'); let last=null;
+  const show=i=>{idx=(i+vis.length)%vis.length;const p=vis[idx];$('lbImg').src=p.src;$('lbImg').alt=p.c;$('lbCap').textContent=`${p.date}｜${p.g}｜${p.c}（${idx+1}/${vis.length}）`;};
+  const open=i=>{last=document.activeElement;show(i);lb.classList.add('on');$('lbX').focus();};
+  const close=()=>{lb.classList.remove('on');last&&last.focus();};
+  $('grid').onclick=e=>{const f=e.target.closest('figure');if(f)open(+f.dataset.i)};
+  $('grid').onkeydown=e=>{const f=e.target.closest('figure');if(f&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open(+f.dataset.i)}};
+  $('lbX').onclick=close; $('lbP').onclick=()=>show(idx-1); $('lbN').onclick=()=>show(idx+1);
+  lb.onclick=e=>{if(e.target===lb)close()};
+  document.addEventListener('keydown',e=>{if(!lb.classList.contains('on'))return;
+    if(e.key==='Escape')close(); if(e.key==='ArrowLeft')show(idx-1); if(e.key==='ArrowRight')show(idx+1);});
+})();
+render(DAYS[DAYS.length-1].date);
+</script>
+</body>
+</html>
